@@ -5,9 +5,9 @@ class Joke extends React.Component {
     return(
       <div>
         <div className="Joke-buttons">
-          <button>Up</button>
+          <button onClick={this.props.upVote}>Up</button>
           <span>{this.props.votes}</span>
-          <button>Down</button>
+          <button onClick={this.props.downVote}>Down</button>
         </div>
         <div className="Joke-text">
           {this.props.text}
