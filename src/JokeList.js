@@ -1,5 +1,6 @@
 import React from 'react';
 import axios from 'axios';
+import Joke from './Joke';
 
 class JokeList extends React.Component {
   static defaultProps = {
@@ -20,7 +21,7 @@ class JokeList extends React.Component {
       let res = await axios.get("https://icanhazdadjoke.com/", {
         headers: { Accept: "application/json" }
       });
-      jokesArr.push(res.data.joke);
+      jokesArr.push({text: res.data.joke, votes: 0});
     }
     this.setState({ jokes: jokesArr })
   };
@@ -28,8 +29,16 @@ class JokeList extends React.Component {
 
   render(){
     return(
-      <div>
+      <div className='JokeList'>
         <h1>DAD JOKES</h1>
+        <div className="JokeList-jokes">
+          {this.state.jokes.map(j => (
+            <Joke
+              text={j.text}
+              votes={j.votes}              
+            />
+          ))}
+        </div>
       </div>
     )
   }
