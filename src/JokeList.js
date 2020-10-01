@@ -11,13 +11,18 @@ class JokeList extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      jokes: []
+      jokes: JSON.parse(window.localStorage.getItem('jokes') || '[]')
     };
-    this.handleVote = this.handleVote.bind(this);
+    this.handleClick = this.handleClick.bind(this);
   };
 
-  async componentDidMount() {
-    // Load jokes
+  componentDidMount() {
+    if(this.state.jokes.length === 0){
+      this.getJokes();
+    }
+  }
+
+  async getJokes() {
     let jokesArr = [];
     while(jokesArr.length < this.props.numJokesToGet) {
       let res = await axios.get("https://icanhazdadjoke.com/", {
@@ -25,22 +30,38 @@ class JokeList extends React.Component {
       });
       jokesArr.push({id: uuid(), text: res.data.joke, votes: 0});
     }
-    this.setState({ jokes: jokesArr })
+    this.setState(
+      st => ({
+        jokes: [...st.jokes, ...jokesArr]
+      }),
+      () => window.localStorage.setItem('jokes', JSON.stringify(this.state.jokes))
+    );
+
+    window.localStorage.setItem('jokes', JSON.stringify(jokesArr));
   };
+
 
   handleVote(id, delta) {
     this.setState(
       st => ({
         jokes: st.jokes.map(j => 
           j.id === id ? {...j, votes: j.votes + delta} : j)   
-      })
-    )
+      }),
+      () => window.localStorage.setItem('jokes', JSON.stringify(this.state.jokes))
+    );
+  }
+
+  handleClick() {
+    this.getJokes();
   }
 
   render(){
     return(
       <div className='JokeList'>
         <h1>DAD JOKES</h1>
+        <div>
+          <button onClick={this.handleClick}>Get More Jokes</button>
+        </div>
         <div className="JokeList-jokes">
           {this.state.jokes.map(j => (
             <Joke
