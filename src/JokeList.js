@@ -14,6 +14,8 @@ class JokeList extends React.Component {
       jokes: JSON.parse(window.localStorage.getItem('jokes') || '[]'),
       loading: false
     };
+    this.seenJokes = new Set(this.state.jokes.map(j => j.text));
+    console.log(this.seenJokes);
     this.handleClick = this.handleClick.bind(this);
   };
 
@@ -24,12 +26,19 @@ class JokeList extends React.Component {
   }
 
   async getJokes() {
+    try {
     let jokesArr = [];
     while(jokesArr.length < this.props.numJokesToGet) {
       let res = await axios.get("https://icanhazdadjoke.com/", {
         headers: { Accept: "application/json" }
       });
-      jokesArr.push({id: uuid(), text: res.data.joke, votes: 0});
+      let newJoke = res.data.joke;
+      if(!this.seenJokes.has(newJoke)){
+        jokesArr.push({id: uuid(), text: res.data.joke, votes: 0});
+      } else {
+        console.log('found dupe');
+        console.log(newJoke);
+      }  
     }
     this.setState(
       st => ({
@@ -38,8 +47,9 @@ class JokeList extends React.Component {
       }),
       () => window.localStorage.setItem('jokes', JSON.stringify(this.state.jokes))
     );
-
-    window.localStorage.setItem('jokes', JSON.stringify(jokesArr));
+    } catch(err){
+      alert(err)
+    }
   }; 
 
 
@@ -64,6 +74,7 @@ class JokeList extends React.Component {
         <div className="spinner">Loading...</div>
       )
     }
+    let jokes = this.state.jokes.sort((a,b) => b.votes - a.votes);
     return(
       <div className='JokeList'>
         <h1>DAD JOKES</h1>
@@ -71,7 +82,7 @@ class JokeList extends React.Component {
           <button onClick={this.handleClick}>Get More Jokes</button>
         </div>
         <div className="JokeList-jokes">
-          {this.state.jokes.map(j => (
+          {jokes.map(j => (
             <Joke
               key={j.id}
               text={j.text}
