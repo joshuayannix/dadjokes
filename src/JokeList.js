@@ -11,7 +11,8 @@ class JokeList extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      jokes: JSON.parse(window.localStorage.getItem('jokes') || '[]')
+      jokes: JSON.parse(window.localStorage.getItem('jokes') || '[]'),
+      loading: false
     };
     this.handleClick = this.handleClick.bind(this);
   };
@@ -32,13 +33,14 @@ class JokeList extends React.Component {
     }
     this.setState(
       st => ({
+        loading: false,
         jokes: [...st.jokes, ...jokesArr]
       }),
       () => window.localStorage.setItem('jokes', JSON.stringify(this.state.jokes))
     );
 
     window.localStorage.setItem('jokes', JSON.stringify(jokesArr));
-  };
+  }; 
 
 
   handleVote(id, delta) {
@@ -52,10 +54,16 @@ class JokeList extends React.Component {
   }
 
   handleClick() {
-    this.getJokes();
+    this.setState({ loading: true }, this.getJokes);
+
   }
 
   render(){
+    if(this.state.loading) {
+      return (
+        <div className="spinner">Loading...</div>
+      )
+    }
     return(
       <div className='JokeList'>
         <h1>DAD JOKES</h1>
